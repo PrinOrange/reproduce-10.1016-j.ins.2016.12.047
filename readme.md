@@ -87,15 +87,15 @@ $$ \text{normalized}(s_j) = \frac{s_j}{\sum_{x=1}^{n_i} s_x} $$
 **定义标签权重**。标签有两种方法：一是用户主动标记，二是根据词频分析自动计算（需要使用分词算法，中文分词算法有结巴分词等）。
 
 - **用户主动标注**：若标签由用户直接提供，每个标签权重为
-  $\frac{1}{Z_i}$（均分权重）。 $$w_{ij} = \frac{1}{Z_i} \quad
-  (\text{用户直接标注时})$$
-- **通过检索生成**：若标签通过算法生成（如 TF-IDF），需归一化处理。 $$w_{ij} =
-  \text{normalized}(s_j) \quad (\text{检索生成时})$$
+  $\frac{1}{Z_i}$（均分权重）。 $w_{ij} = \frac{1}{Z_i} \quad
+  (\text{用户直接标注时})$
+- **通过检索生成**：若标签通过算法生成（如 TF-IDF），需归一化处理。 $w_{ij} =
+  \text{normalized}(s_j) \quad (\text{检索生成时})$
 
 接下来是 **构建用户 -
 标签矩阵**，即将每个用户的标签权重向量堆叠为矩阵，行表示用户，列表示标签：
-$$M_{nl} = \begin{bmatrix} \vec{V}_1 \\ \vec{V}_2 \\ \vdots \\ \vec{V}_N
-\end{bmatrix}$$
+$M_{nl} = \begin{bmatrix} \vec{V}_1 \\ \vec{V}_2 \\ \vdots \\ \vec{V}_N
+\end{bmatrix}$
 
 矩阵大小为 $N \times n$，$N$ 为用户数，$n$ 为标签总数。
 
@@ -108,15 +108,15 @@ $$M_{nl} = \begin{bmatrix} \vec{V}_1 \\ \vec{V}_2 \\ \vdots \\ \vec{V}_N
 同一用户内标签的共现频率越高，相关性越强（类似协同过滤）。计算方法如下：
 
 1. **LIR（标签内部相关性）** 基于用户集合 $H$（同时拥有标签 $l_j$ 和 $l_k$
-   的用户），计算加权 Jaccard 相似度： $$ \text{LIR}(l_j, l_k) = \frac{1}{|H|}
-   \sum_{i \in H} \frac{w_{ij} w_{ik}}{w_{ij} + w_{ik} - w_{ij} w_{ik}} $$
+   的用户），计算加权 Jaccard 相似度： $ \text{LIR}(l_j, l_k) = \frac{1}{|H|}
+   \sum_{i \in H} \frac{w_{ij} w_{ik}}{w_{ij} + w_{ik} - w_{ij} w_{ik}} $
    其中分母 $w_{ij} + w_{ik} - w_{ij} w_{ik}$
    近似“标签共现概率”，分子为共现权重的调和平均。
 
 2. **归一化 N-LIR** 归一化确保每个标签与其他标签的相关性总和为
-   1，便于比较。将相关性标准化到概率分布： $$ N-\text{LIR}(l_j, l_k) =
+   1，便于比较。将相关性标准化到概率分布： $ N-\text{LIR}(l_j, l_k) =
    \begin{cases} 1 & (j=k) \\ \frac{\text{LIR}(l_j, l_k)}{\sum_{j \neq k}
-   \text{LIR}(l_j, l_k)} & (j \neq k) \end{cases} $$
+   \text{LIR}(l_j, l_k)} & (j \neq k) \end{cases} $
 
 ### 外部相关性
 
@@ -125,15 +125,15 @@ $$M_{nl} = \begin{bmatrix} \vec{V}_1 \\ \vec{V}_2 \\ \vdots \\ \vec{V}_N
 计算方法如下：
 
 1. **LOR（标签外部相关性）** 若存在中间标签 $l_q$，同时与 $l_j$ 和 $l_k$
-   相关，则定义外部相关性： $$\text{LOR}(l_j, l_k | l_q) =
-   \min\left(N-\text{LIR}(l_j, l_q), N-\text{LIR}(l_k, l_q)\right)$$
+   相关，则定义外部相关性： $\text{LOR}(l_j, l_k | l_q) =
+   \min\left(N-\text{LIR}(l_j, l_q), N-\text{LIR}(l_k, l_q)\right)$
    它表明外部相关性强度由最弱的一侧决定（木桶效应）。
 2. **归一化的 LOR** 对于两个标签 $l_j$ 和 $l_k$ 的外部相关性的归一化定义为
-   $$N\text{-}\mathrm{LOR}(l_j, l_k) = \begin{cases} 0, & j = k \\
+   $N\text{-}\mathrm{LOR}(l_j, l_k) = \begin{cases} 0, & j = k \\
    \displaystyle\frac{\sum\limits_{l_q \in E} \mathrm{LOR}(l_j, l_k|l_q)}{|E|},
    & j \neq k \end{cases} \\[2ex] \text{其中 } E = \{ l_q \mid
    (N\text{-}\mathrm{LIR}(l_j, l_q) > 0) \ \land\
-   (N\text{-}\mathrm{LIR}(l_k,l_q) > 0) \}$$
+   (N\text{-}\mathrm{LIR}(l_k,l_q) > 0) \}$
 
 ### 相关性定义
 
