@@ -108,14 +108,15 @@ $$M_{nl} = \begin{bmatrix} \vec{V}_1 \\ \vec{V}_2 \\ \vdots \\ \vec{V}_N
 同一用户内标签的共现频率越高，相关性越强（类似协同过滤）。计算方法如下：
 
 1. **LIR（标签内部相关性）** 基于用户集合 $H$（同时拥有标签 $l_j$ 和 $l_k$
-   的用户），计算加权 Jaccard 相似度： $$\text{LIR}(l_j, l_k) = \frac{1}{|H|}
-   \sum_{i \in H} \frac{w_{ij} w_{ik}}{w_{ij} + w_{ik} - w_{ij} w_{ik}}$$
-   其中分母 $w_{ij} + w_{ik} - w_{ij} w_{ik}$ 近似“标签共现概率”，分子为共现权重的调和平均。
+   的用户），计算加权 Jaccard 相似度： $$ \text{LIR}(l_j, l_k) = \frac{1}{|H|}
+   \sum_{i \in H} \frac{w_{ij} w_{ik}}{w_{ij} + w_{ik} - w_{ij} w_{ik}} $$
+   其中分母 $w_{ij} + w_{ik} - w_{ij} w_{ik}$
+   近似“标签共现概率”，分子为共现权重的调和平均。
 
 2. **归一化 N-LIR** 归一化确保每个标签与其他标签的相关性总和为
-   1，便于比较。将相关性标准化到概率分布： $$N-\text{LIR}(l_j, l_k) =
+   1，便于比较。将相关性标准化到概率分布： $$ N-\text{LIR}(l_j, l_k) =
    \begin{cases} 1 & (j=k) \\ \frac{\text{LIR}(l_j, l_k)}{\sum_{j \neq k}
-   \text{LIR}(l_j, l_k)} & (j \neq k) \end{cases}$$
+   \text{LIR}(l_j, l_k)} & (j \neq k) \end{cases} $$
 
 ### 外部相关性
 
@@ -144,7 +145,6 @@ l_k), & j ≠ k \end{cases} $$
 
 其中的 $\alpha ∈[0,1]$ ，确定多标签间内相关性和外相关性的相对重要性。
 
-
 ## 用户 - 标签矩阵更新
 
 这部分主要讲了**多用户社交关系建模**和**推荐算法的迭代过程**。
@@ -161,53 +161,41 @@ $M_{ut} = M_{ul} \times M_{lt}$
 
 ### 多用户社交关系建模
 
-核心思想是通过 **关注 - 被关注（Following/Followee）关系** 构建用户之间的相似度。社交关系被建模为向量
-$Fg(u)$ 和 $Fr(u)$：
+核心思想是通过 **关注 - 被关注（Following/Followee）关系**
+构建用户之间的相似度。社交关系被建模为向量 $Fg(u)$ 和 $Fr(u)$：
 
 - $Fg(u)$：u 关注的人。
 - $Fr(u)$：关注 u 的人。
 
 相似度计算（使用余弦相似度）:
 
-$$
-sim(Fg(u_i), Fg(u_j)) = \frac{Fg(u_i) \cdot Fg(u_j)}{\|Fg(u_i)\| \cdot
-\|Fg(u_j)\|}
-$$
+$$ sim(Fg(u_i), Fg(u_j)) = \frac{Fg(u_i) \cdot Fg(u_j)}{\|Fg(u_i)\| \cdot
+\|Fg(u_j)\|} $$
 
-$$
-sim(Fr(u_i), Fr(u_j)) = \frac{Fr(u_i) \cdot Fr(u_j)}{\|Fr(u_i)\| \cdot
-\|Fr(u_j)\|}
-$$
+$$ sim(Fr(u_i), Fr(u_j)) = \frac{Fr(u_i) \cdot Fr(u_j)}{\|Fr(u_i)\| \cdot
+\|Fr(u_j)\|} $$
 
 得到综合社交相似度
 
-$$
-sim(SR(u_i), SR(u_j)) = sim(Fg(u_i), Fg(u_j)) + sim(Fr(u_i), Fr(u_j))
-$$
+$$ sim(SR(u_i), SR(u_j)) = sim(Fg(u_i), Fg(u_j)) + sim(Fr(u_i), Fr(u_j)) $$
 
 再进行归一化
 
-$$
-N\text{-}sim = \frac{sim - \min(sim)}{\max(sim) - \min(sim)}
-$$
+$$ N\text{-}sim = \frac{sim - \min(sim)}{\max(sim) - \min(sim)} $$
 
 然后计算社交关系矩阵 $M_{sr}$
 
 - 构造一个 $N \times N$ 的社交相似度矩阵。
 - 如果用户之间有社交关系，使用归一化相似度；如果没有直接关系，则为 0 或 1。
 
-$$
-m_{ij} = \begin{cases} N\text{-}sim(SR(u_i), SR(u_j)), & \text{若有社交关系} \\
-1, & i = j \\ 0, & \text{否则} \end{cases}
-$$
+$$ m_{ij} = \begin{cases} N\text{-}sim(SR(u_i), SR(u_j)), & \text{若有社交关系}
+\\ 1, & i = j \\ 0, & \text{否则} \end{cases} $$
 
 ## 迭代推荐算法
 
 为了将社交关系与兴趣建模结合起来，提出一种基于 PageRank 风格的**迭代算法**。
 
-$$
-M_{ut}^{(t)} = \beta M_{ut} + (1 - \beta) M_{sr} \times M_{ut}^{(t-1)}
-$$
+$$ M_{ut}^{(t)} = \beta M_{ut} + (1 - \beta) M_{sr} \times M_{ut}^{(t-1)} $$
 
 - $M_{ut}^{(t)}$：第 $t$ 轮迭代后的用户 - 标签矩阵。
 - $M_{sr}$：社交关系矩阵。
